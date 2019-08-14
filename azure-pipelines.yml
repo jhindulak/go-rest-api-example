@@ -10,22 +10,21 @@ jobs:
       vmImage: 'Ubuntu 16.04'
     steps:
       - script: |
-          export
           go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-          golangci-lint run ./...
+          ~/go/bin/golangci-lint run ./...
         displayName: 'lint'
       - script: go test -cover ./...
         displayName: 'unit tests'
   - job: Build
     pool:
       vmImage: 'Ubuntu 16.04'
-      steps:
-        - script: |
-            mkdir dist
-            CGO_ENABLED0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
-          displayName: 'build'
-        - script: docker build -t $(imageName) .
-          displayName: 'docker build'
+    steps:
+      - script: |
+          mkdir dist
+          CGO_ENABLED0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
+        displayName: 'build'
+      - script: docker build -t $(imageName) .
+        displayName: 'docker build'
   - job: Push_Artifacts
     dependsOn:
       - Tests

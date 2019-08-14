@@ -28,6 +28,7 @@ stages:
           - script: docker build -t $(imageName) .
             displayName: 'docker build'
   - stage: Push_Artifacts
+    jobs:
       - job: Push_Artifacts
         dependsOn:
           - Tests

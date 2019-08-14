@@ -9,8 +9,8 @@ variables:
 
 steps:
   - script: |
-      mkdir /dist
-      go build -o /dist/go-rest-api -v main.go
+      mkdir dist
+      go build -o dist/go-rest-api -v main.go
     displayName: 'build'
   - script: go test -cover ./...
     displayName: 'test'

@@ -10,7 +10,7 @@ variables:
 steps:
   - script: |
       mkdir dist
-      go build -o dist/go-rest-api -v main.go
+      CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
     displayName: 'build'
   - script: go test -cover ./...
     displayName: 'test'

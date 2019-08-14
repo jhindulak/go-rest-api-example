@@ -54,7 +54,7 @@ func (account *Account) Create() map[string]interface{} {
 
 	GetDB().Create(account)
 
-	if account.ID <= 0 {
+	if account.ID == 0 {
 		return utils.Message(false, "Failed to create account, connection error")
 	}
 

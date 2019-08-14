@@ -21,7 +21,7 @@ jobs:
     steps:
       - script: |
           mkdir dist
-          CGO_ENABLED0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
         displayName: 'build'
       - script: docker build -t $(imageName) .
         displayName: 'docker build'

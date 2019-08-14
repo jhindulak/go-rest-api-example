@@ -23,7 +23,7 @@ func (contact *Contact) Validate() (map[string]interface{}, bool) {
 		return utils.Message(false, "Phone number cannot be empty"), false
 	}
 
-	if contact.UserId <= 0 {
+	if contact.UserId == 0 {
 		return utils.Message(false, "User ID is not recognized"), false
 	}
 

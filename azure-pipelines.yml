@@ -1,0 +1,9 @@
+pool:
+  vmImage: 'Ubuntu 18.04'
+
+variables:
+  imageName: 'go-rest-api-example:$(build.buildId)'
+
+steps:
+  - script: go version
+    displayName: 'docker build'

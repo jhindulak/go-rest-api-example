@@ -25,7 +25,7 @@ jobs:
           displayName: 'build'
         - script: docker build -t $(imageName) .
           displayName: 'docker build'
-  - job: Push Artifacts
+  - job: Push_Artifacts
     dependsOn:
       - Tests
       - Build

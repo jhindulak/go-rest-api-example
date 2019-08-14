@@ -5,7 +5,8 @@ variables:
   imageName: 'jasonhindulak/go-rest-api-example:$(build.buildId)'
 
 stages:
-  - stage: Build and Test
+  - stage: build_and_test
+    displayName: 'Build and Test'
     jobs:
       - job: Tests
         pool:

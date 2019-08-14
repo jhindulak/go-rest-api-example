@@ -1,22 +1,38 @@
 trigger:
   - master
 
-pool:
-  vmImage: 'Ubuntu 16.04'
-
 variables:
   imageName: 'jasonhindulak/go-rest-api-example:$(build.buildId)'
 
-steps:
-  - script: |
-      mkdir dist
-      CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
-    displayName: 'build'
-  - script: go test -cover ./...
-    displayName: 'test'
-  - script: docker build -t $(imageName) .
-    displayName: 'docker build'
-  - script: |
-      docker login -u $(dockerId) -p $(dockerPassword)
-      docker push $(imageName)
-    displayName: 'docker push'
+jobs:
+  - job: Tests
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - script: |
+          go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+          $(GOPATH)/bin/golangci-lint run ./...
+        displayName: 'lint'
+      - script: go test -cover ./...
+        displayName: 'unit tests'
+  - job: Build
+    pool:
+      vmImage: 'Ubuntu 16.04'
+      steps:
+        - script: |
+            mkdir dist
+            CGO_ENABLED0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
+          displayName: 'build'
+        - script: docker build -t $(imageName) .
+          displayName: 'docker build'
+  - job: Push Artifacts
+    dependsOn:
+      - Tests
+      - Build
+    pool:
+      vmImage: 'Ubuntu 16.04'
+      steps:
+        - script: |
+            docker login -u $(dockerId) -p $(dockerPassword)
+            docker push $(imageName)
+          displayName: 'docker push'

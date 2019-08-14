@@ -1,41 +1,43 @@
 trigger:
   - master
 
+pr:
+  - master
+
 variables:
   imageName: 'jasonhindulak/go-rest-api-example:$(build.buildId)'
 
-stages:
-  - stage: build_test_push
-    displayName: 'Build, test, and push'
-    jobs:
-      - job: Tests
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        steps:
-          - script: |
-              go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-              ~/go/bin/golangci-lint run ./...
-            displayName: 'lint'
-          - script: go test -cover ./...
-            displayName: 'unit tests'
-      - job: Build
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        steps:
-          - script: |
-              mkdir dist
-              CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
-            displayName: 'build'
-          - script: docker build -t $(imageName) .
-            displayName: 'docker build'
-      - job: Push_Artifacts
-        dependsOn:
-          - Tests
-          - Build
-        pool:
-          vmImage: 'Ubuntu 16.04'
-          steps:
-            - script: |
-                docker login -u $(dockerId) -p $(dockerPassword)
-                docker push $(imageName)
-              displayName: 'docker push'
+
+jobs:
+  - job: Tests
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - script: |
+          go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+          ~/go/bin/golangci-lint run ./...
+        displayName: 'lint'
+      - script: go test -cover ./...
+        displayName: 'unit tests'
+  - job: Build
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - script: |
+          mkdir dist
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
+        displayName: 'build'
+      - script: docker build -t $(imageName) .
+        displayName: 'docker build'
+  - job: Push_Artifacts
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    dependsOn:
+      - Tests
+      - Build
+    pool:
+      vmImage: 'Ubuntu 16.04'
+      steps:
+        - script: |
+            docker login -u $(dockerId) -p $(dockerPassword)
+            docker push $(imageName)
+          displayName: 'docker push'

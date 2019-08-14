@@ -5,8 +5,8 @@ variables:
   imageName: 'jasonhindulak/go-rest-api-example:$(build.buildId)'
 
 stages:
-  - stage: build_and_test
-    displayName: 'Build and Test'
+  - stage: build_test_push
+    displayName: 'Build, test, and push'
     jobs:
       - job: Tests
         pool:
@@ -28,8 +28,6 @@ stages:
             displayName: 'build'
           - script: docker build -t $(imageName) .
             displayName: 'docker build'
-  - stage: Push_Artifacts
-    jobs:
       - job: Push_Artifacts
         dependsOn:
           - Tests

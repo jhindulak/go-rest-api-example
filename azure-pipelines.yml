@@ -5,7 +5,7 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 variables:
-  imageName: 'go-rest-api-example:$(build.buildId)'
+  imageName: 'jasonhindulak/go-rest-api-example:$(build.buildId)'
 
 steps:
   - script: |

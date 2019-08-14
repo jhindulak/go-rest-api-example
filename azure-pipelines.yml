@@ -1,3 +1,6 @@
+trigger:
+  - master
+
 pool:
   vmImage: 'Ubuntu 16.04'
 
@@ -5,5 +8,13 @@ variables:
   imageName: 'go-rest-api-example:$(build.buildId)'
 
 steps:
-  - script: go version
+  - script: |
+      mkdir /dist
+      go build -v main.go -o /dist/go-rest-api
+    displayName: 'build'
+  - script: go test -cover ./...
+    displayName: 'test'
+  - script: docker build -t $(imageName) .
     displayName: 'docker build'
+  - script: go version
+    displayName: 'docker push'

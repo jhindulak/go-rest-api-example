@@ -5,8 +5,7 @@ pr:
   - master
 
 variables:
-  imageName: 'jasonhindulak/go-rest-api-example:$(build.buildId)'
-
+  imageName: 'jasonhindulak/go-rest-api-example'
 
 jobs:
   - job: Tests
@@ -27,7 +26,7 @@ jobs:
           mkdir dist
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
         displayName: 'build'
-      - script: docker build -t $(imageName) .
+      - script: docker build -t $(imageName):$(build.buildId) -t $(imageName):latest .
         displayName: 'docker build'
   - job: Push_Artifacts
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -39,5 +38,6 @@ jobs:
       steps:
         - script: |
             docker login -u $(dockerId) -p $(dockerPassword)
-            docker push $(imageName)
+            docker push $(imageName):$(build.buildId)
+            docker push $(imageName):latest
           displayName: 'docker push'

@@ -35,9 +35,9 @@ jobs:
       - Build
     pool:
       vmImage: 'Ubuntu 16.04'
-      steps:
-        - script: |
-            docker login -u $(dockerId) -p $(dockerPassword)
-            docker push $(imageName):$(build.buildId)
-            docker push $(imageName):latest
-          displayName: 'docker push'
+    steps:
+      - script: |
+          docker login -u $(dockerId) -p $(dockerPassword)
+          docker push $(imageName):$(build.buildId)
+          docker push $(imageName):latest
+        displayName: 'docker push'

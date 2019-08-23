@@ -8,36 +8,25 @@ variables:
   imageName: 'jasonhindulak/go-rest-api-example'
 
 jobs:
-  - job: Tests
+  - job: CI
     pool:
       vmImage: 'Ubuntu 16.04'
     steps:
       - script: |
           go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
           ~/go/bin/golangci-lint run ./...
-        displayName: 'lint'
+        displayName: Lint
       - script: go test -cover ./...
-        displayName: 'unit tests'
-  - job: Build
-    pool:
-      vmImage: 'Ubuntu 16.04'
-    steps:
+        displayName: Unit Tests
       - script: |
           mkdir dist
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
-        displayName: 'build'
+        displayName: Build
       - script: docker build -t $(imageName):$(build.buildId) -t $(imageName):latest .
-        displayName: 'docker build'
-  - job: Push_Artifacts
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-    dependsOn:
-      - Tests
-      - Build
-    pool:
-      vmImage: 'Ubuntu 16.04'
-    steps:
+        displayName: Docker Build
       - script: |
           docker login -u $(dockerId) -p $(dockerPassword)
           docker push $(imageName):$(build.buildId)
           docker push $(imageName):latest
-        displayName: 'docker push'
+        displayName: Docker Push
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))

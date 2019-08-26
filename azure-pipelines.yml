@@ -15,7 +15,13 @@ jobs:
       - script: |
           go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
           ~/go/bin/golangci-lint run ./...
-        displayName: Lint
+        displayName: Go Lint
+      - task: HelmInstaller@1
+        displayName: Helm installer
+        inputs:
+          helmVersionToInstall: 2.14.3
+      - script: helm lint $(System.DefaultWorkingDirectory)/deployments/helm/go-rest-api/ --strict
+        displayName: Helm Lint
       - script: |
           go get -u github.com/jstemmer/go-junit-report
           go test ./... -v -cover 2>&1 | ~/go/bin/go-junit-report -set-exit-code > report.xml
@@ -32,9 +38,18 @@ jobs:
         displayName: Build
       - script: docker build -t $(imageName):$(build.buildId) -t $(imageName):latest .
         displayName: Docker Build
+      - task: HelmDeploy@0
+        inputs:
+          command: 'package'
+          chartPath: '$(System.DefaultWorkingDirectory)/deployments/helm/go-rest-api'
+          chartVersion: '1.0.0'
+        displayName: Package Helm Chart
       - script: |
           docker login -u $(dockerId) -p $(dockerPassword)
           docker push $(imageName):$(build.buildId)
           docker push $(imageName):latest
         displayName: Docker Push
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+      - publish: $(Build.ArtifactStagingDirectory)/go-rest-api-*
+        displayName: Publish Helm Chart as Artifact
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))

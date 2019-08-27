@@ -14,14 +14,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 config:
-  db_name: ""
-  db_pass: ""
-  db_user: ""
-  db_type: ""
-  db_host: ""
-  db_port: ""
   token_password: ""
-  PORT: ""
 
 service:
   type: NodePort

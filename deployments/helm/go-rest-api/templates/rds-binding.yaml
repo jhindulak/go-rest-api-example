@@ -1,0 +1,12 @@
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceBinding
+metadata:
+    name: {{ include "go-rest-api.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "go-rest-api.name" . }}
+        helm.sh/chart: {{ include "go-rest-api.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  instanceRef:
+    name: {{ include "go-rest-api.fullname" . }}

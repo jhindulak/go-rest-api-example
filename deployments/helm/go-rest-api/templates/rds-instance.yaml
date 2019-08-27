@@ -1,0 +1,15 @@
+apiVersion: servicecatalog.k8s.io/v1beta1
+kind: ServiceInstance
+metadata:
+  name: {{ include "go-rest-api.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "go-rest-api.name" . }}
+    helm.sh/chart: {{ include "go-rest-api.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  clusterServiceClassExternalName: rdspostgresql
+  clusterServicePlanExternalName: dev
+  parameters:
+    AccessCidr: "10.0.128.0/17"
+    DBInstanceClass: db.t2.micro

@@ -3,11 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ include "go-rest-api.fullname" . }}
 data:
-  db_name: {{ required "A valid .Values.config.db_name entry is required" .Values.config.db_name }}
-  db_pass: {{ required "A valid .Values.config.db_pass entry is required" .Values.config.db_pass }}
-  db_user: {{ required "A valid .Values.config.db_user entry is required" .Values.config.db_user }}
-  db_type: postgres
-  db_host: {{ required "A valid .Values.config.db_host entry is required" .Values.config.db_host }}
-  db_port: {{ required "A valid .Values.config.db_port entry is required" .Values.config.db_port | quote }}
-  PORT: {{ required "A valid .Values.config.port entry is required" .Values.config.PORT | quote }}
+  listen_port: {{ default 8080 .Values.config.listen_port | quote }}
   token_password: {{ required "A valid .Values.config.token_password entry is required" .Values.config.token_password }}

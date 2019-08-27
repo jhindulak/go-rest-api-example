@@ -22,7 +22,7 @@ func main() {
 	// Contact Handlers
 	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET")
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("listen_port")
 	if port == "" {
 		port = "8000"
 	}

@@ -51,8 +51,8 @@ jobs:
         displayName: Docker Push
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
       - task: PublishBuildArtifacts@1
-          inputs:
-            artifactName: 'helm-chart'
-            pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        inputs:
+          artifactName: 'helm-chart'
+          pathtoPublish: '$(Build.ArtifactStagingDirectory)'
         displayName: Publish Helm Chart as Artifact
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))

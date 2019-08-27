@@ -50,6 +50,7 @@ jobs:
           docker push $(imageName):latest
         displayName: Docker Push
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-      - publish: $(Build.ArtifactStagingDirectory)/go-rest-api-*
+      - publish: $(Build.ArtifactStagingDirectory)
+        artifactName: 'helm-chart'
         displayName: Publish Helm Chart as Artifact
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))

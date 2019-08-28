@@ -27,8 +27,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "go-rest-api.fullname" . }}
-            - secretRef:
-                name: {{ include "go-rest-api.fullname" . }}-rdspsql
           ports:
             - name: http
               containerPort: {{ default 8080 .Values.config.listen_port }}

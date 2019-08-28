@@ -16,6 +16,10 @@ fullnameOverride: ""
 config:
   token_password: ""
   listen_port: 8080
+  MASTER_USERNAME: ""
+  MASTER_PASSWORD: ""
+  DB_NAME: ""
+  ENDPOINT_ADDRESS: ""
 
 service:
   type: NodePort

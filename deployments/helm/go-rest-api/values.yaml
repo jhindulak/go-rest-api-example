@@ -15,6 +15,7 @@ fullnameOverride: ""
 
 config:
   token_password: ""
+  listen_port: 8080
 
 service:
   type: NodePort

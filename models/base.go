@@ -41,6 +41,7 @@ func init() {
 	fmt.Println("Successfully connected to database.")
 	db = conn
 	db.Debug().AutoMigrate(&Account{}, &Contact{})
+	fmt.Println("AutoMigrating complete...")
 }
 
 func GetDB() *gorm.DB {

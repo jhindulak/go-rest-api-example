@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting application...")
 	router := mux.NewRouter()
 	router.Use(app.JwtAuthentication) // Attach middleware JWT auth
 
@@ -22,12 +23,14 @@ func main() {
 	// Contact Handlers
 	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET")
 
+	fmt.Println("Finished adding handlers...")
+
 	port := os.Getenv("listen_port")
 	if port == "" {
 		port = "8000"
 	}
 
-	fmt.Printf("Listening on port: %q", port)
+	fmt.Println("Listening on port: " + port)
 
 	err := http.ListenAndServe(":"+port, router)
 	if err != nil {

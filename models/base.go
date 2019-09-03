@@ -38,6 +38,7 @@ func init() {
 		log.Fatal("BROKEN")
 	}
 
+	fmt.Println("Successfully connected to database.")
 	db = conn
 	db.Debug().AutoMigrate(&Account{}, &Contact{})
 }

@@ -23,11 +23,14 @@ func main() {
 	// Contact Handlers
 	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET")
 
+	// Health Check Handler
+	router.HandleFunc("/api/healthcheck", controllers.HealthCheck).Methods("GET")
+
 	fmt.Println("Finished adding handlers...")
 
 	port := os.Getenv("listen_port")
 	if port == "" {
-		port = "8000"
+		port = "80"
 	}
 
 	fmt.Println("Listening on port: " + port)

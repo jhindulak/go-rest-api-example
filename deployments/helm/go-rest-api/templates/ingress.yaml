@@ -1,9 +1,8 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "go-rest-api.fullname" . -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ include "go-rest-api.fullname" . }}
   labels:
 {{ include "go-rest-api.labels" . | indent 4 }}
   {{- with .Values.ingress.annotations }}
@@ -15,7 +14,7 @@ spec:
   tls:
   {{- range .Values.ingress.tls }}
     - hosts:
-      {{- range .hosts }}
+      {{- range . }}
         - {{ . | quote }}
       {{- end }}
       secretName: {{ .secretName }}
@@ -29,8 +28,8 @@ spec:
         {{- range .paths }}
           - path: {{ . }}
             backend:
-              serviceName: {{ $fullName }}
-              servicePort: http
+              serviceName: {{ template "go-rest-api.fullname" $ }}
+              servicePort: {{ $.Values.service.port }}
         {{- end }}
   {{- end }}
 {{- end }}

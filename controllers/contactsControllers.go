@@ -10,7 +10,7 @@ import (
 	"github.com/jhindulak/go-rest-api-example/utils"
 )
 
-var CreateContact = func(w http.ResponseWriter, r *http.Request) {
+func (local StoreType) CreateContact(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
 	contact := &models.Contact{}
 
@@ -21,11 +21,11 @@ var CreateContact = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	contact.UserId = user
-	resp := contact.Create()
+	resp := local.Store.CreateContact(contact)
 	utils.Respond(w, resp)
 }
 
-var GetContactsFor = func(w http.ResponseWriter, r *http.Request) {
+func (local StoreType) GetContactsFor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
@@ -33,7 +33,7 @@ var GetContactsFor = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetContacts(uint(id))
+	data := local.Store.GetContacts(uint(id))
 	resp := utils.Message(true, "Successfully retrieved contacts")
 	resp["data"] = data
 	utils.Respond(w, resp)

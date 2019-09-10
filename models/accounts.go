@@ -22,7 +22,7 @@ type Account struct {
 	Token    string `json:"token" sql:"-"`
 }
 
-func (account *Account) Validate() (map[string]interface{}, bool) {
+func (store *StoreType) ValidateAccount(account *Account) (map[string]interface{}, bool) {
 	if !strings.Contains(account.Email, "@") {
 		return utils.Message(false, "Valid email address is required"), false
 	}
@@ -33,7 +33,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 
 	temp := &Account{}
 
-	err := GetDB().Table("accounts").Where("email = ?", account.Email).First(temp).Error
+	err := store.DB.Table("accounts").Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return utils.Message(false, "Connection error, Please retry..."), false
 	}
@@ -44,15 +44,15 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return utils.Message(false, "Successfully validated account"), true
 }
 
-func (account *Account) Create() map[string]interface{} {
-	if resp, ok := account.Validate(); !ok {
+func (store *StoreType) CreateAccount(account *Account) map[string]interface{} {
+	if resp, ok := store.ValidateAccount(account); !ok {
 		return resp
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
 
-	GetDB().Create(account)
+	store.DB.Create(account)
 
 	if account.ID == 0 {
 		return utils.Message(false, "Failed to create account, connection error")
@@ -71,9 +71,9 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(email, password string) map[string]interface{} {
+func (store *StoreType) Login(email, password string) map[string]interface{} {
 	account := &Account{}
-	err := GetDB().Table("accounts").Where("email = ?", email).First(account).Error
+	err := store.DB.Table("accounts").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return utils.Message(false, "Email address not found")
@@ -99,9 +99,9 @@ func Login(email, password string) map[string]interface{} {
 	return resp
 }
 
-func GetUser(u uint) *Account {
+func (store *StoreType) GetUser(u uint) *Account {
 	acc := &Account{}
-	GetDB().Table("accounts").Where("id = ?", u).First(acc)
+	store.DB.Table("accounts").Where("id = ?", u).First(acc)
 	if acc.Email == "" {
 		return nil
 	}

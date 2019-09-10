@@ -1,18 +1,21 @@
-package models
+package database
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/jhindulak/go-rest-api-example/models"
+
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
 )
 
-var db *gorm.DB
+type DB struct {
+	db *gorm.DB
+}
 
-func init() {
+// OpenDB opens connection do DB with credentials
+func OpenDB() *gorm.DB {
 	e := godotenv.Load()
 	if e != nil {
 		fmt.Println(e)
@@ -30,20 +33,26 @@ func init() {
 
 	dbUri := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
 		dbHost, dbPort, username, dbName, password)
-	fmt.Println(dbUri)
 
-	conn, err := gorm.Open("postgres", dbUri)
+	db, err := gorm.Open("postgres", dbUri)
 	if err != nil {
-		fmt.Println(err)
-		log.Fatal("BROKEN")
+		panic(err)
 	}
 
-	fmt.Println("Successfully connected to database.")
-	db = conn
-	db.Debug().AutoMigrate(&Account{}, &Contact{})
-	fmt.Println("AutoMigrating complete...")
+	if err := db.DB().Ping(); err != nil {
+		panic(err)
+	}
+
+	db.Debug().AutoMigrate(&models.Account{}, &models.Contact{})
+
+	return db
 }
 
-func GetDB() *gorm.DB {
-	return db
+// SetupDB runs migrations and seeds (if flag is set up)
+func SetupDB() {
+	db := OpenDB()
+
+	if seedDatabase := os.Getenv("RUN_SEEDS"); seedDatabase == "true" {
+		runSeeds(db)
+	}
 }

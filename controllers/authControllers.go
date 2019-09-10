@@ -8,7 +8,7 @@ import (
 	"github.com/jhindulak/go-rest-api-example/utils"
 )
 
-var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
+func (local StoreType) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	account := &models.Account{}
 	err := json.NewDecoder(r.Body).Decode(account)
 	if err != nil {
@@ -16,11 +16,11 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := account.Create()
+	resp := local.Store.CreateAccount(account)
 	utils.Respond(w, resp)
 }
 
-var Authenticate = func(w http.ResponseWriter, r *http.Request) {
+func (local StoreType) Authenticate(w http.ResponseWriter, r *http.Request) {
 	account := &models.Account{}
 	err := json.NewDecoder(r.Body).Decode(account)
 	if err != nil {
@@ -28,6 +28,6 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.Login(account.Email, account.Password)
+	resp := local.Store.Login(account.Email, account.Password)
 	utils.Respond(w, resp)
 }

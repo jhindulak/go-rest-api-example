@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+
+	"github.com/jhindulak/go-rest-api-example/database"
+	"github.com/jhindulak/go-rest-api-example/models"
 
 	"github.com/jhindulak/go-rest-api-example/controllers"
 
@@ -12,19 +16,22 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting application...")
+	database.SetupDB()
+	db := database.OpenDB()
+	store := &models.StoreType{DB: db}
+
 	router := mux.NewRouter()
 	router.Use(app.JwtAuthentication) // Attach middleware JWT auth
 
 	// Authentication Handlers
-	router.HandleFunc("/api/user/new", controllers.CreateAccount).Methods("POST")
-	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")
+	router.HandleFunc("/api/user/new", controllers.StoreType{Store: store}.CreateAccount).Methods("POST")
+	router.HandleFunc("/api/user/login", controllers.StoreType{Store: store}.Authenticate).Methods("POST")
 
 	// Contact Handlers
-	router.HandleFunc("/api/me/contacts", controllers.GetContactsFor).Methods("GET")
+	router.HandleFunc("/api/me/contacts", controllers.StoreType{Store: store}.GetContactsFor).Methods("GET")
 
 	// Health Check Handler
-	router.HandleFunc("/api/healthcheck", controllers.HealthCheck).Methods("GET")
+	router.HandleFunc("/api/healthcheck", controllers.StoreType{Store: store}.HealthCheck).Methods("GET")
 
 	fmt.Println("Finished adding handlers...")
 
@@ -34,9 +41,5 @@ func main() {
 	}
 
 	fmt.Println("Listening on port: " + port)
-
-	err := http.ListenAndServe(":"+port, router)
-	if err != nil {
-		fmt.Print(err)
-	}
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }

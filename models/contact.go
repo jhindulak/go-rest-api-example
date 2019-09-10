@@ -14,7 +14,7 @@ type Contact struct {
 	UserId uint   `json:"user_id"`
 }
 
-func (contact *Contact) Validate() (map[string]interface{}, bool) {
+func validateContact(contact *Contact) (map[string]interface{}, bool) {
 	if contact.Name == "" {
 		return utils.Message(false, "Contact name cannot be empty"), false
 	}
@@ -30,12 +30,12 @@ func (contact *Contact) Validate() (map[string]interface{}, bool) {
 	return utils.Message(true, "Successfully validated contact"), true
 }
 
-func (contact *Contact) Create() map[string]interface{} {
-	if resp, ok := contact.Validate(); !ok {
+func (store *StoreType) CreateContact(contact *Contact) map[string]interface{} {
+	if resp, ok := validateContact(contact); !ok {
 		return resp
 	}
 
-	GetDB().Create(contact)
+	store.DB.Create(contact)
 
 	resp := utils.Message(true, "Successfully created contact")
 	resp["contact"] = contact
@@ -43,9 +43,9 @@ func (contact *Contact) Create() map[string]interface{} {
 	return resp
 }
 
-func GetContact(id uint) *Contact {
+func (store *StoreType) GetContact(id uint) *Contact {
 	contact := &Contact{}
-	err := GetDB().Table("contacts").Where("id = ?", id).First(contact).Error
+	err := store.DB.Table("contacts").Where("id = ?", id).First(contact).Error
 	if err != nil {
 		return nil
 	}
@@ -53,9 +53,9 @@ func GetContact(id uint) *Contact {
 	return contact
 }
 
-func GetContacts(user uint) []*Contact {
+func (store *StoreType) GetContacts(user uint) []*Contact {
 	contacts := make([]*Contact, 0)
-	err := GetDB().Table("contacts").Where("user_id = ?", user).Find(&contacts).Error
+	err := store.DB.Table("contacts").Where("user_id = ?", user).Find(&contacts).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil

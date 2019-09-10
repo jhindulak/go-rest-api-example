@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.44.3 // indirect
+	github.com/DATA-DOG/go-txdb v0.1.3
 	github.com/DataDog/zstd v1.4.1 // indirect
 	github.com/OpenPeeDeeP/depguard v1.0.0 // indirect
 	github.com/Shopify/sarama v1.23.1 // indirect
@@ -44,7 +45,7 @@ require (
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pty v1.1.8 // indirect
-	github.com/lib/pq v1.2.0 // indirect
+	github.com/lib/pq v1.2.0
 	github.com/logrusorgru/aurora v0.0.0-20190803045625-94edacc10f9b // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
@@ -89,4 +90,5 @@ require (
 	honnef.co/go/tools v0.0.1-2019.2.2 // indirect
 	mvdan.cc/unparam v0.0.0-20190720180237-d51796306d8f // indirect
 	sourcegraph.com/sqs/pbtypes v1.0.0 // indirect
+	syreclabs.com/go/faker v1.2.0
 )

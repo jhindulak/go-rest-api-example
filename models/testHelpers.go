@@ -32,6 +32,11 @@ func RegisterTxDB(name string) {
 
 func PrepareTestDB(withName string) (*gorm.DB, error) {
 	sqlDB, err := sql.Open(withName, fmt.Sprintf("connection_%d", time.Now().UnixNano()))
+
+	if err != nil {
+		panic(err)
+	}
+
 	db, err := gorm.Open("postgres", sqlDB)
 
 	if err != nil {

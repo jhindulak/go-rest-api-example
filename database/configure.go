@@ -10,10 +10,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type DB struct {
-	db *gorm.DB
-}
-
 // OpenDB opens connection do DB with credentials
 func OpenDB() *gorm.DB {
 	e := godotenv.Load()

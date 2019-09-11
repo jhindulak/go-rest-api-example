@@ -131,11 +131,5 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-qa'
-              overrideValues: 'image.tag=$(build.buildId),
-                               config.token_password=$(qa_token_password),
-                               config.listen_port=$(qa_listen_port),
-                               config.MASTER_USERNAME$(qa_database_username),
-                               config.MASTER_PASSWORD=$(qa_database_password),
-                               config.DB_NAME=$(qa_database_name),
-                               config.ENDPOINT_ADDRESS=$(qa_database_address)'
-            
+              overrideValues: 'image.tag=$(build.buildId),config.token_password=$(qa_token_password),config.listen_port=$(qa_listen_port),config.MASTER_USERNAME$(qa_database_username),config.MASTER_PASSWORD=$(qa_database_password),config.DB_NAME=$(qa_database_name),config.ENDPOINT_ADDRESS=$(qa_database_address)'
+              

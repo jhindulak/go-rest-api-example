@@ -16,7 +16,6 @@ import (
 )
 
 func main() {
-	database.SetupDB()
 	db := database.OpenDB()
 	store := &models.StoreType{DB: db}
 

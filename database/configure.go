@@ -43,12 +43,3 @@ func OpenDB() *gorm.DB {
 
 	return db
 }
-
-// SetupDB runs migrations and seeds (if flag is set up)
-func SetupDB() {
-	db := OpenDB()
-
-	if seedDatabase := os.Getenv("RUN_SEEDS"); seedDatabase == "true" {
-		runSeeds(db)
-	}
-}

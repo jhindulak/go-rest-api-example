@@ -109,8 +109,8 @@ stages:
           - script: |
               set -euo pipefail
 
-              echo "Here is the artifacts directory:"
-              ls -R $SYSTEM_ARTIFACTSDIRECTORY
+              echo "Here is the work directory:"
+              ls -R /home/vsts/work/1/
 
               if [[ ! -e $(find $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
                   echo "Could not find Helm chart artifact at directory: $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/"

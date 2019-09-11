@@ -17,59 +17,112 @@ resources:
         POSTGRES_PASSWORD: thispasswordissecret
         POSTGRES_DB: contacts
 
-jobs:
-  - job: CI
-    services:
-      postgres: postgres
+stages:
+- stage: CI
+  displayName: CI
+  jobs:
+    - job: CI
+      services:
+        postgres: postgres
+      pool:
+        vmImage: 'Ubuntu 16.04'
+      steps:
+        - script: |
+            go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+            ~/go/bin/golangci-lint run ./...
+          displayName: Go Lint
+
+        - task: HelmInstaller@1
+          displayName: Helm installer
+          inputs:
+            helmVersionToInstall: 2.14.3
+
+        - script: helm lint $(System.DefaultWorkingDirectory)/deployments/helm/go-rest-api/ --strict
+          displayName: Helm Lint
+
+        - script: |
+            go test ./... -v -cover
+          displayName: Unit Tests
+          continueOnError: true
+
+        - script: |
+            mkdir dist
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
+          displayName: Build
+
+        - script: |
+            go get -u github.com/jstemmer/go-junit-report
+            export token_password="secretpassword" MASTER_USERNAME="postgres" MASTER_PASSWORD="thispasswordissecret" \
+              DB_NAME="contacts" ENDPOINT_ADDRESS="localhost" DB_PORT="5432"
+            go test -tags=integration ./... -v -cover 2>&1 | ~/go/bin/go-junit-report -set-exit-code > report.xml
+          displayName: Integration Tests
+
+        - task: PublishTestResults@2
+          inputs:
+            testRunner: JUnit
+            testResultsFiles: $(System.DefaultWorkingDirectory)/**/report.xml
+          condition: always()
+          displayName: Integration Tests
+
+        - script: docker build -t $(imageName):$(build.buildId) -t $(imageName):latest .
+          displayName: Docker Build
+
+        - task: HelmDeploy@0
+          inputs:
+            command: 'package'
+            chartPath: '$(System.DefaultWorkingDirectory)/deployments/helm/go-rest-api'
+            chartVersion: '1.0.0'
+          displayName: Package Helm Chart
+
+        - script: |
+            docker login -u $(dockerId) -p $(dockerPassword)
+            docker push $(imageName):$(build.buildId)
+            docker push $(imageName):latest
+          displayName: Docker Push
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+        - task: PublishPipelineArtifact@1
+          inputs:
+            targetPath: '$(Build.ArtifactStagingDirectory)'
+            artifact: 'helm-chart'
+          displayName: Publish Helm Chart as Artifact
+          condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+- stage: Deploy_QA
+  displayName:  Deploy to QA
+  dependsOn: CI
+  jobs:
+  - deployment: Deploy_QA
+    displayName: Deploy to QA
     pool:
       vmImage: 'Ubuntu 16.04'
-    steps:
-      - script: |
-          go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-          ~/go/bin/golangci-lint run ./...
-        displayName: Go Lint
-      - task: HelmInstaller@1
-        displayName: Helm installer
-        inputs:
-          helmVersionToInstall: 2.14.3
-      - script: helm lint $(System.DefaultWorkingDirectory)/deployments/helm/go-rest-api/ --strict
-        displayName: Helm Lint
-      - script: |
-          go test ./... -v -cover
-        displayName: Unit Tests
-        continueOnError: true
-      - script: |
-          mkdir dist
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-rest-api -v main.go
-        displayName: Build
-      - script: |
-          go get -u github.com/jstemmer/go-junit-report
-          export token_password="secretpassword" MASTER_USERNAME="postgres" MASTER_PASSWORD="thispasswordissecret" \
-            DB_NAME="contacts" ENDPOINT_ADDRESS="localhost" DB_PORT="5432"
-          go test -tags=integration ./... -v -cover 2>&1 | ~/go/bin/go-junit-report -set-exit-code > report.xml
-      - task: PublishTestResults@2
-        inputs:
-          testRunner: JUnit
-          testResultsFiles: $(System.DefaultWorkingDirectory)/**/report.xml
-        condition: always()
-        displayName: Integration Tests
-      - script: docker build -t $(imageName):$(build.buildId) -t $(imageName):latest .
-        displayName: Docker Build
-      - task: HelmDeploy@0
-        inputs:
-          command: 'package'
-          chartPath: '$(System.DefaultWorkingDirectory)/deployments/helm/go-rest-api'
-          chartVersion: '1.0.0'
-        displayName: Package Helm Chart
-      - script: |
-          docker login -u $(dockerId) -p $(dockerPassword)
-          docker push $(imageName):$(build.buildId)
-          docker push $(imageName):latest
-        displayName: Docker Push
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-      - task: PublishBuildArtifacts@1
-        inputs:
-          artifactName: 'helm-chart'
-          pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        displayName: Publish Helm Chart as Artifact
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    environment: 'pe-dev-qa'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: HelmInstaller@1
+            displayName: Helm installer
+            inputs:
+              helmVersionToInstall: 2.14.3
+
+          - script: |
+              set -euo pipefail
+              if [[ ! -e $(find $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
+                  echo "Could not find Helm chart artifact at directory: $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/"
+                  exit 1
+              fi
+              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/go-rest-api-*.tgz)"
+            displayName: Get full path to Helm Chart artifact
+
+          - task: HelmDeploy@0
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceConnection: 'pe-dev-qa-go-api-qa-1568149242863'
+              namespace: 'go-api-qa'
+              command: 'upgrade'
+              chartType: 'FilePath'
+              chartPath: '$(HELM_CHART_PACKAGE)'
+              releaseName: 'go-api-qa'
+              overrideValues: 'image.tag=$(build.buildId),$(helm_token_password),$(helm_listen_port),$(helm_master_username),$(helm_master_password),$(helm_db_name),$(helm_endpoint_address)'
+            

@@ -97,6 +97,12 @@ stages:
     pool:
       vmImage: 'Ubuntu 16.04'
     environment: 'pe-dev-qa'
+    variables:
+      qa_listen_port: 8080
+      qa_database_username: postgres
+      qa_database_name: postgres
+      qa_database_address: postgres.cprcybwaayux.us-east-1.rds.amazonaws.com
+      qa_token_password: thisdoesntmatter
     strategy:
       runOnce:
         deploy:
@@ -119,11 +125,17 @@ stages:
           - task: HelmDeploy@0
             inputs:
               connectionType: 'Kubernetes Service Connection'
-              kubernetesServiceConnection: 'pe-dev-qa-go-api-qa-1568149242863'
+              kubernetesServiceConnection: 'pe-dev.go-api-qa'
               namespace: 'go-api-qa'
               command: 'upgrade'
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-qa'
-              overrideValues: 'image.tag=$(build.buildId),$(helm_token_password),$(helm_listen_port),$(helm_master_username),$(helm_master_password),$(helm_db_name),$(helm_endpoint_address)'
+              overrideValues: 'image.tag=$(build.buildId),
+                               config.token_password=$(qa_token_password),
+                               config.listen_port=$(qa_listen_port),
+                               config.MASTER_USERNAME$(qa_database_username),
+                               config.MASTER_PASSWORD=$(qa_database_password),
+                               config.DB_NAME=$(qa_database_name),
+                               config.ENDPOINT_ADDRESS=$(qa_database_address)'
             

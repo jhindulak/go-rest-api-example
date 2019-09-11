@@ -109,14 +109,11 @@ stages:
           - script: |
               set -euo pipefail
 
-              echo "Here is the work directory:"
-              ls -R /home/vsts/work/1/
-
-              if [[ ! -e $(find $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
-                  echo "Could not find Helm chart artifact at directory: $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/"
+              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
+                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/helm-chart/"
                   exit 1
               fi
-              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $SYSTEM_ARTIFACTSDIRECTORY/helm-chart/go-rest-api-*.tgz)"
+              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz)"
             displayName: Get full path to Helm Chart artifact
 
           - task: HelmDeploy@0

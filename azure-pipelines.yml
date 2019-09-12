@@ -214,7 +214,7 @@ stages:
     displayName: Deploy to Production
     pool:
       vmImage: 'Ubuntu 16.04'
-    environment: 'pe-dev-production'
+    environment: 'pe-dev-prod'
     strategy:
       runOnce:
         deploy:

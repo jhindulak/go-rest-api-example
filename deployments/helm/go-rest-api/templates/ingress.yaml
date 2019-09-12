@@ -21,15 +21,11 @@ spec:
   {{- end }}
 {{- end }}
   rules:
-  {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-        {{- range .paths }}
-          - path: {{ . }}
+          - path: {{ $.Values.ingress.path }}
             backend:
               serviceName: {{ template "go-rest-api.fullname" $ }}
               servicePort: {{ $.Values.service.port }}
-        {{- end }}
-  {{- end }}
 {{- end }}

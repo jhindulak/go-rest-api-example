@@ -4,7 +4,7 @@ metadata:
   name: {{ include "go-rest-api.fullname" . }}
 data:
   listen_port: {{ default 80 .Values.config.listen_port | quote }}
-  token_password: {{ required "A valid .Values.config.token_password entry is required" .Values.config.token_password }}
+  token_password: {{ .Values.config.token_password }}
   MASTER_USERNAME: {{ .Values.config.MASTER_USERNAME | quote }}
   MASTER_PASSWORD: {{ .Values.config.MASTER_PASSWORD | quote }}
   DB_NAME: {{ .Values.config.DB_NAME | quote }}

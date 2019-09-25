@@ -28,6 +28,10 @@ resource "aws_security_group" "postgres-to-eks-pe-dev" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "postgres_to_eks_pe_dev"
+  }
 }
 
 module "postgres_database" {

@@ -147,20 +147,13 @@ stages:
               environmentServiceNameAWS: 'platform-engineering-admin'
 
           - script: |
-              chmod +x $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
-              cd $(Agent.BuildDirectory)/artifacts/terraform
-              source ./set_outputs.sh
+              echo "##vso[task.setvariable variable=database_address]$(terraform output database_address)"
+              echo "##vso[task.setvariable variable=database_name]$(terraform output database_name)"
+              echo "##vso[task.setvariable variable=database_username]$(terraform output database_username)"
+              echo "##vso[task.setvariable variable=database_password]$(terraform output database_password)"
+              echo "##vso[task.setvariable variable=database_port]$(terraform output database_port)"
+              echo "##vso[task.setvariable variable=route53_record]$(terraform output route53_record)"
             displayName: Set Environment Variables from Terraform
-
-          # Remove this
-          - script: |
-              echo 'Testing if environment variables set in another step exist...'
-              export
-
-              echo 'Finished export, explicit check...'
-              echo "Here is the database_address $database_address"
-            displayName: Check env
-
 
           - task: HelmInstaller@1
             displayName: Helm installer
@@ -186,7 +179,7 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-dev'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$route53_record,config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$database_username,config.MASTER_PASSWORD=$database_password,config.DB_NAME=$database_name,config.ENDPOINT_ADDRESS=$database_address'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
 
 - stage: Deploy_Staging
   displayName:  Deploy to Staging
@@ -231,9 +224,12 @@ stages:
               environmentServiceNameAWS: 'platform-engineering-admin'
 
           - script: |
-              chmod +x $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
-              cd $(Agent.BuildDirectory)/artifacts/terraform
-              source ./set_outputs.sh
+              echo "##vso[task.setvariable variable=database_address]$(terraform output database_address)"
+              echo "##vso[task.setvariable variable=database_name]$(terraform output database_name)"
+              echo "##vso[task.setvariable variable=database_username]$(terraform output database_username)"
+              echo "##vso[task.setvariable variable=database_password]$(terraform output database_password)"
+              echo "##vso[task.setvariable variable=database_port]$(terraform output database_port)"
+              echo "##vso[task.setvariable variable=route53_record]$(terraform output route53_record)"
             displayName: Set Environment Variables from Terraform
 
           - task: HelmInstaller@1
@@ -260,7 +256,7 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-staging'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$route53_record,config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$database_username,config.MASTER_PASSWORD=$database_password,config.DB_NAME=$database_name,config.ENDPOINT_ADDRESS=$database_address'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
 
 - stage: Deploy_Prod
   displayName:  Deploy to Production
@@ -305,9 +301,12 @@ stages:
               environmentServiceNameAWS: 'platform-engineering-admin'
 
           - script: |
-              chmod +x $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
-              cd $(Agent.BuildDirectory)/artifacts/terraform
-              source ./set_outputs.sh
+              echo "##vso[task.setvariable variable=database_address]$(terraform output database_address)"
+              echo "##vso[task.setvariable variable=database_name]$(terraform output database_name)"
+              echo "##vso[task.setvariable variable=database_username]$(terraform output database_username)"
+              echo "##vso[task.setvariable variable=database_password]$(terraform output database_password)"
+              echo "##vso[task.setvariable variable=database_port]$(terraform output database_port)"
+              echo "##vso[task.setvariable variable=route53_record]$(terraform output route53_record)"
             displayName: Set Environment Variables from Terraform
 
           - task: HelmInstaller@1
@@ -334,4 +333,4 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-prod'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$route53_record,config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$database_username,config.MASTER_PASSWORD=$database_password,config.DB_NAME=$database_name,config.ENDPOINT_ADDRESS=$database_address'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'

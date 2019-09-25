@@ -12,9 +12,13 @@ if [ -z "$(which terraform 2>/dev/null)" ]; then
   exit 1
 fi
 
+# Get the execution directory of the init.sh script to give to 'terraform init'
+EXECUTION_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 source $varfile
 
 echo "Initializing terraform for the $env environment."
 
 terraform init -backend=true \
                -backend-config="key=go-contacts/state/${env}/terraform.tfstate"
+               $EXECUTION_DIR

@@ -143,7 +143,7 @@ stages:
               provider: 'aws'
               command: 'apply'
               workingDirectory: '$(Agent.BuildDirectory)/artifacts/terraform'
-              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/development/terraform.tfvars"'
+              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/development/terraform.tfvars" -var "database_password=$(qa_database_password)"'
               environmentServiceNameAWS: 'platform-engineering-admin'
 
           - script: |
@@ -169,12 +169,12 @@ stages:
           - task: HelmDeploy@0
             inputs:
               connectionType: 'Kubernetes Service Connection'
-              kubernetesServiceConnection: 'pe-dev.go-api-qa'
-              namespace: 'go-api-qa'
+              kubernetesServiceConnection: 'pe-dev.go-api-dev'
+              namespace: 'go-api-dev'
               command: 'upgrade'
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
-              releaseName: 'go-api-qa'
+              releaseName: 'go-api-dev'
               overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
 
 - stage: Deploy_Staging
@@ -216,7 +216,7 @@ stages:
               provider: 'aws'
               command: 'apply'
               workingDirectory: '$(Agent.BuildDirectory)/artifacts/terraform'
-              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/staging/terraform.tfvars"'
+              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/staging/terraform.tfvars" -var "database_password=$(staging_database_password)"'
               environmentServiceNameAWS: 'platform-engineering-admin'
 
           - script: |
@@ -289,7 +289,7 @@ stages:
               provider: 'aws'
               command: 'apply'
               workingDirectory: '$(Agent.BuildDirectory)/artifacts/terraform'
-              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/production/terraform.tfvars"'
+              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/production/terraform.tfvars" -var "database_password=$(prod_database_password)"'
               environmentServiceNameAWS: 'platform-engineering-admin'
 
           - script: |

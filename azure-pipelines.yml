@@ -201,14 +201,14 @@ stages:
             displayName: Terraform Installer
 
           - task: TerraformTaskV1@0
-              displayName: Terraform Init
-              inputs:
-                provider: 'aws'
-                command: 'init'
-                workingDirectory: $(Agent.BuildDirectory)/artifacts/terraform
-                backendServiceAWS: 'platform-engineering-admin'
-                backendAWSBucketName: 'go-contacts-terraform'
-                backendAWSKey: 'go-contacts/state/staging/terraform.tfstate'
+            displayName: Terraform Init
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              workingDirectory: $(Agent.BuildDirectory)/artifacts/terraform
+              backendServiceAWS: 'platform-engineering-admin'
+              backendAWSBucketName: 'go-contacts-terraform'
+              backendAWSKey: 'go-contacts/state/staging/terraform.tfstate'
 
           - task: TerraformTaskV1@0
             displayName: Terraform Apply
@@ -274,14 +274,14 @@ stages:
             displayName: Terraform Installer
 
           - task: TerraformTaskV1@0
-              displayName: Terraform Init
-              inputs:
-                provider: 'aws'
-                command: 'init'
-                workingDirectory: $(Agent.BuildDirectory)/artifacts/terraform
-                backendServiceAWS: 'platform-engineering-admin'
-                backendAWSBucketName: 'go-contacts-terraform'
-                backendAWSKey: 'go-contacts/state/prod/terraform.tfstate'
+            displayName: Terraform Init
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              workingDirectory: $(Agent.BuildDirectory)/artifacts/terraform
+              backendServiceAWS: 'platform-engineering-admin'
+              backendAWSBucketName: 'go-contacts-terraform'
+              backendAWSKey: 'go-contacts/state/prod/terraform.tfstate'
 
           - task: TerraformTaskV1@0
             displayName: Terraform Apply

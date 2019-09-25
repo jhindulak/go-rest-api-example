@@ -11,7 +11,7 @@ resource "aws_route53_record" "go-contacts-url" {
 
 // Create database
 resource "aws_security_group" "postgres-to-eks-pe-dev" {
-  name = "postgres_to_eks_pe_dev"
+  name = "go_contacts_${var.env}_postgres_to_eks_pe_dev"
   description = "Allows the pe-dev EKS cluster to connect to databases on port 5432"
   vpc_id = data.aws_vpc.pe-dev.id
 
@@ -30,7 +30,7 @@ resource "aws_security_group" "postgres-to-eks-pe-dev" {
   }
 
   tags = {
-    Name = "postgres_to_eks_pe_dev"
+    Name = "go_contacts_${var.env}_postgres_to_eks_pe_dev"
   }
 }
 

@@ -124,7 +124,7 @@ stages:
 
           - task: TerraformInstaller@0
             inputs:
-              terraformVersion: '0.12.3'
+              terraformVersion: '0.12.9'
             displayName: Terraform Installer
 
           - task: TerraformTaskV1@0
@@ -197,7 +197,7 @@ stages:
           
           - task: TerraformInstaller@0
             inputs:
-              terraformVersion: '0.12.3'
+              terraformVersion: '0.12.9'
             displayName: Terraform Installer
 
           - task: TerraformTaskV1@0
@@ -270,7 +270,7 @@ stages:
           
           - task: TerraformInstaller@0
             inputs:
-              terraformVersion: '0.12.3'
+              terraformVersion: '0.12.9'
             displayName: Terraform Installer
 
           - task: TerraformTaskV1@0

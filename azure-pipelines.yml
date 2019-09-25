@@ -176,7 +176,7 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-dev'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$route53_record,config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$database_username,config.MASTER_PASSWORD=$database_password,config.DB_NAME=$database_name,config.ENDPOINT_ADDRESS=$database_address'
 
 - stage: Deploy_Staging
   displayName:  Deploy to Staging
@@ -250,7 +250,7 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-staging'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$route53_record,config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$database_username,config.MASTER_PASSWORD=$database_password,config.DB_NAME=$database_name,config.ENDPOINT_ADDRESS=$database_address'
 
 - stage: Deploy_Prod
   displayName:  Deploy to Production
@@ -324,4 +324,4 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-prod'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$route53_record,config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$database_username,config.MASTER_PASSWORD=$database_password,config.DB_NAME=$database_name,config.ENDPOINT_ADDRESS=$database_address'

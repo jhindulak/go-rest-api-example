@@ -20,5 +20,5 @@ source $varfile
 echo "Initializing terraform for the $env environment."
 
 terraform init -backend=true \
-               -backend-config="key=go-contacts/state/${env}/terraform.tfstate"
+               -backend-config="key=go-contacts/state/${env}/terraform.tfstate" \
                $EXECUTION_DIR

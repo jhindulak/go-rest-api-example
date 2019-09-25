@@ -176,7 +176,7 @@ stages:
 
 - stage: Deploy_Staging
   displayName:  Deploy to Staging
-  dependsOn: Deploy_QA
+  dependsOn: Deploy_Dev
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
 

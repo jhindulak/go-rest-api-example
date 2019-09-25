@@ -10,6 +10,7 @@ function export_variable() {
 
 export_variable "database_address"
 export_variable "database_name"
+export_variable "database_username"
 export_variable "database_password"
 export_variable "database_port"
 export_variable "route53_record"

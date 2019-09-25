@@ -7,30 +7,6 @@ pr:
 variables:
   imageName: 'jasonhindulak/go-rest-api-example'
 
-  ##################### - QA - #####################
-  qa_url: 'go-api-qa.platform.hyland.io'
-  qa_listen_port: 8080
-  qa_database_username: postgres
-  qa_database_name: postgres
-  qa_database_address: go-api-qa.cprcybwaayux.us-east-1.rds.amazonaws.com
-  qa_token_password: thisdoesntmatter
-  
-  ##################### - Staging - #####################
-  staging_url: 'go-api-staging.platform.hyland.io'
-  staging_listen_port: 8080
-  staging_database_username: postgres
-  staging_database_name: postgres
-  staging_database_address: go-api-staging.cprcybwaayux.us-east-1.rds.amazonaws.com
-  staging_token_password: thisdoesntmatter
-
-  ##################### - Production - #####################
-  prod_url: 'go-api-prod.platform.hyland.io'
-  prod_listen_port: 8080
-  prod_database_username: postgres
-  prod_database_name: postgres
-  prod_database_address: go-api-prod.cprcybwaayux.us-east-1.rds.amazonaws.com
-  prod_token_password: thisdoesntmatter
-
 # For running integrations tests
 resources:
   containers:
@@ -91,11 +67,12 @@ stages:
           testRunner: JUnit
           testResultsFiles: $(System.DefaultWorkingDirectory)/**/report.xml
         condition: always()
-        displayName: Integration Tests
+        displayName: Publish Test Results
 
       - script: docker build -t $(imageName):$(build.buildId) -t $(imageName):latest .
         displayName: Docker Build
 
+      # Copies Helm chart to $(Build.ArtifactStagingDirectory)
       - task: HelmDeploy@0
         inputs:
           command: 'package'
@@ -103,18 +80,13 @@ stages:
           chartVersion: '1.0.0'
         displayName: Package Helm Chart
 
+      # Copies files to $(Build.ArtifactStagingDirectory)/terraform
       - task: CopyFiles@2
         inputs:
           SourceFolder: '$(Build.SourcesDirectory)/deployments'
           Contents: 'terraform/**'
           TargetFolder: '$(Build.ArtifactStagingDirectory)'
         displayName: Copy Terraform directory to $(Build.ArtifactStagingDirectory)
-
-      #### REMOVE THIS! ####
-      - script: |
-          ls $(Build.ArtifactStagingDirectory)
-          ls -R $(Build.ArtifactStagingDirectory)
-        displayName: Check staging dir
 
       - script: |
           docker login -u $(dockerId) -p $(dockerPassword)
@@ -123,10 +95,11 @@ stages:
         displayName: Docker Push
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
+      # Artifacts found at $AGENT_BUILDDIRECTORY/artifacts
       - task: PublishPipelineArtifact@1
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
-          artifact: 'helm-chart'
+          artifact: 'artifacts'
         displayName: Publish Helm Chart as Artifact
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
@@ -152,6 +125,23 @@ stages:
           - task: TerraformInstaller@0
             inputs:
               terraformVersion: '0.12.3'
+            displayName: Terraform Installer
+
+          - script: |
+              terraformDirectory=$AGENT_BUILDDIRECTORY/artifacts/terraform
+              $terraformDirectory/init.sh $terraformDirectory/development/terraform.tfvars
+            displayName: Terraform Init Wrapper
+
+          - task: TerraformTaskV1@0
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              workingDirectory: '$(Agent.BuildDirectory)/artifacts/terraform'
+              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/development/terraform.tfvars"'
+              environmentServiceNameAWS: 'platform-engineering-admin'
+
+          - script: $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
+            displayName: Set Environment Variables from Terraform
 
           - task: HelmInstaller@1
             displayName: Helm installer
@@ -161,11 +151,11 @@ stages:
           - script: |
               set -euo pipefail
 
-              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
-                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/helm-chart/"
+              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/artifacts/go-rest-api-*.tgz) ]]; then
+                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/artifacts/"
                   exit 1
               fi
-              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz)"
+              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/artifacts/go-rest-api-*.tgz)"
             displayName: Get full path to Helm Chart artifact
 
           - task: HelmDeploy@0
@@ -177,7 +167,7 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-qa'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(qa_url),config.token_password=$(qa_token_password),config.listen_port=$(qa_listen_port),config.MASTER_USERNAME=$(qa_database_username),config.MASTER_PASSWORD=$(qa_database_password),config.DB_NAME=$(qa_database_name),config.ENDPOINT_ADDRESS=$(qa_database_address)'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
 
 - stage: Deploy_Staging
   displayName:  Deploy to Staging
@@ -197,6 +187,27 @@ stages:
         deploy:
           steps:
           
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: '0.12.3'
+            displayName: Terraform Installer
+
+          - script: |
+              terraformDirectory=$AGENT_BUILDDIRECTORY/artifacts/terraform
+              $terraformDirectory/init.sh $terraformDirectory/staging/terraform.tfvars
+            displayName: Terraform Init Wrapper
+
+          - task: TerraformTaskV1@0
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              workingDirectory: '$(Agent.BuildDirectory)/artifacts/terraform'
+              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/staging/terraform.tfvars"'
+              environmentServiceNameAWS: 'platform-engineering-admin'
+
+          - script: $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
+            displayName: Set Environment Variables from Terraform
+
           - task: HelmInstaller@1
             displayName: Helm installer
             inputs:
@@ -205,11 +216,11 @@ stages:
           - script: |
               set -euo pipefail
 
-              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
-                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/helm-chart/"
+              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/artifacts/go-rest-api-*.tgz) ]]; then
+                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/artifacts/"
                   exit 1
               fi
-              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz)"
+              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/artifacts/go-rest-api-*.tgz)"
             displayName: Get full path to Helm Chart artifact
 
           - task: HelmDeploy@0
@@ -221,7 +232,7 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-staging'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(staging_url),config.token_password=$(staging_token_password),config.listen_port=$(staging_listen_port),config.MASTER_USERNAME=$(staging_database_username),config.MASTER_PASSWORD=$(staging_database_password),config.DB_NAME=$(staging_database_name),config.ENDPOINT_ADDRESS=$(staging_database_address)'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'
 
 - stage: Deploy_Prod
   displayName:  Deploy to Production
@@ -241,6 +252,27 @@ stages:
         deploy:
           steps:
           
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: '0.12.3'
+            displayName: Terraform Installer
+
+          - script: |
+              terraformDirectory=$AGENT_BUILDDIRECTORY/artifacts/terraform
+              $terraformDirectory/init.sh $terraformDirectory/production/terraform.tfvars
+            displayName: Terraform Init Wrapper
+
+          - task: TerraformTaskV1@0
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              workingDirectory: '$(Agent.BuildDirectory)/artifacts/terraform'
+              commandOptions: '-auto-approve -var-file="$(Agent.BuildDirectory)/artifacts/terraform/production/terraform.tfvars"'
+              environmentServiceNameAWS: 'platform-engineering-admin'
+
+          - script: $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
+            displayName: Set Environment Variables from Terraform
+
           - task: HelmInstaller@1
             displayName: Helm installer
             inputs:
@@ -249,11 +281,11 @@ stages:
           - script: |
               set -euo pipefail
 
-              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz) ]]; then
-                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/helm-chart/"
+              if [[ ! -e $(find $AGENT_BUILDDIRECTORY/artifacts/go-rest-api-*.tgz) ]]; then
+                  echo "Could not find Helm chart artifact at directory: $AGENT_BUILDDIRECTORY/artifacts/"
                   exit 1
               fi
-              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/helm-chart/go-rest-api-*.tgz)"
+              echo "##vso[task.setvariable variable=HELM_CHART_PACKAGE]$(find $AGENT_BUILDDIRECTORY/artifacts/go-rest-api-*.tgz)"
             displayName: Get full path to Helm Chart artifact
 
           - task: HelmDeploy@0
@@ -265,4 +297,4 @@ stages:
               chartType: 'FilePath'
               chartPath: '$(HELM_CHART_PACKAGE)'
               releaseName: 'go-api-prod'
-              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(prod_url),config.token_password=$(prod_token_password),config.listen_port=$(prod_listen_port),config.MASTER_USERNAME=$(prod_database_username),config.MASTER_PASSWORD=$(prod_database_password),config.DB_NAME=$(prod_database_name),config.ENDPOINT_ADDRESS=$(prod_database_address)'
+              overrideValues: 'image.tag=$(build.buildId),ingress.hosts[0].host=$(route53_record),config.token_password="thisdoesntmatter",config.listen_port="8080",config.MASTER_USERNAME=$(database_username),config.MASTER_PASSWORD=$(database_password),config.DB_NAME=$(database_name),config.ENDPOINT_ADDRESS=$(database_address)'

@@ -1,7 +1,3 @@
-output "database_endpoint" {
-  value = module.postgres_database.this_db_instance_endpoint
-}
-
 output "database_port" {
   value = module.postgres_database.this_db_instance_port
 }

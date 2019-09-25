@@ -148,7 +148,8 @@ stages:
 
           - script: |
               chmod +x $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
-              source $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
+              cd $(Agent.BuildDirectory)/artifacts/terraform
+              source ./set_outputs.sh
             displayName: Set Environment Variables from Terraform
 
           - task: HelmInstaller@1
@@ -221,7 +222,8 @@ stages:
 
           - script: |
               chmod +x $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
-              source $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
+              cd $(Agent.BuildDirectory)/artifacts/terraform
+              source ./set_outputs.sh
             displayName: Set Environment Variables from Terraform
 
           - task: HelmInstaller@1
@@ -294,7 +296,8 @@ stages:
 
           - script: |
               chmod +x $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
-              source $(Agent.BuildDirectory)/artifacts/terraform/set_outputs.sh
+              cd $(Agent.BuildDirectory)/artifacts/terraform
+              source ./set_outputs.sh
             displayName: Set Environment Variables from Terraform
 
           - task: HelmInstaller@1

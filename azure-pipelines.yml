@@ -100,7 +100,7 @@ stages:
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
           artifact: 'artifacts'
-        displayName: Publish Helm Chart as Artifact
+        displayName: Publish Pipeline Artifacts in $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
 
 - stage: Deploy_Dev
@@ -151,6 +151,16 @@ stages:
               cd $(Agent.BuildDirectory)/artifacts/terraform
               source ./set_outputs.sh
             displayName: Set Environment Variables from Terraform
+
+          # Remove this
+          - script: |
+              echo 'Testing if environment variables set in another step exist...'
+              export
+
+              echo 'Finished export, explicit check...'
+              echo "Here is the database_address $database_address"
+            displayName: Check env
+
 
           - task: HelmInstaller@1
             displayName: Helm installer

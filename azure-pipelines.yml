@@ -32,6 +32,13 @@ stages:
       vmImage: 'Ubuntu 16.04'
     steps:
       
+      - task: TerraformInstaller@0
+        inputs:
+          terraformVersion: '0.12'
+
+      - script: terraform --version
+        displayName: Terraform Version
+
       - script: |
           go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
           ~/go/bin/golangci-lint run ./...

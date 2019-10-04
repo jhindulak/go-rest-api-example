@@ -6,13 +6,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/jhindulak/go-rest-api-example/database"
-	"github.com/jhindulak/go-rest-api-example/models"
-
-	"github.com/jhindulak/go-rest-api-example/controllers"
-
 	"github.com/gorilla/mux"
 	"github.com/jhindulak/go-rest-api-example/app"
+	"github.com/jhindulak/go-rest-api-example/controllers"
+	"github.com/jhindulak/go-rest-api-example/database"
+	"github.com/jhindulak/go-rest-api-example/models"
 )
 
 func main() {
@@ -20,7 +18,6 @@ func main() {
 	store := &models.StoreType{DB: db}
 
 	router := mux.NewRouter()
-	router.Use(app.JwtAuthentication) // Attach middleware JWT auth
 
 	// Authentication Handlers
 	router.HandleFunc("/api/user/new", controllers.StoreType{Store: store}.CreateAccount).Methods("POST")
@@ -28,11 +25,12 @@ func main() {
 
 	// Contact Handlers
 	router.HandleFunc("/api/me/contacts", controllers.StoreType{Store: store}.GetContactsFor).Methods("GET")
+	router.HandleFunc("/api/contact/new", controllers.StoreType{Store: store}.CreateContact).Methods("POST")
 
 	// Health Check Handler
 	router.HandleFunc("/api/healthcheck", controllers.StoreType{Store: store}.HealthCheck).Methods("GET")
 
-	fmt.Println("Finished adding handlers...")
+	router.Use(app.JwtAuthentication) // Attach middleware JWT auth
 
 	port := os.Getenv("listen_port")
 	if port == "" {

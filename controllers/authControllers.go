@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/jhindulak/go-rest-api-example/models"
@@ -16,6 +17,7 @@ func (local StoreType) CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("Creating account for email: %v", account.Email)
 	resp := local.Store.CreateAccount(account)
 	utils.Respond(w, resp)
 }

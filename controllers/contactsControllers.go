@@ -2,12 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
-	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
+	"fmt"
 	"github.com/jhindulak/go-rest-api-example/models"
 	"github.com/jhindulak/go-rest-api-example/utils"
+	"net/http"
 )
 
 func (local StoreType) CreateContact(w http.ResponseWriter, r *http.Request) {
@@ -26,14 +24,15 @@ func (local StoreType) CreateContact(w http.ResponseWriter, r *http.Request) {
 }
 
 func (local StoreType) GetContactsFor(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err != nil {
+	id, found := r.Context().Value("user").(uint)
+
+	if !found {
 		utils.Respond(w, utils.Message(false, "There was an error in your request"))
 		return
 	}
 
-	data := local.Store.GetContacts(uint(id))
+	data := local.Store.GetContacts(id)
+	fmt.Printf("Getting contacts for userId: %d", id)
 	resp := utils.Message(true, "Successfully retrieved contacts")
 	resp["data"] = data
 	utils.Respond(w, resp)
